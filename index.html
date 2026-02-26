@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de Foto com Moldura</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    canvas {
+      display: block;
+      margin-top: 15px;
+      max-width: 100%;
+      border: 1px solid #ccc;
+    }
+
+    .frames button {
+      margin-right: 8px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Gerador de Foto com Moldura</h2>
+
+  <!-- Upload da imagem -->
+  <input type="file" id="upload" accept="image/*">
+
+  <!-- Botões de moldura -->
+  <div class="frames">
+    <!-- 🔴 TROQUE os caminhos abaixo pelas SUAS imagens PNG -->
+    <button data-frame="frames/frame1.png">Moldura 1</button>
+    <button data-frame="frames/frame2.png">Moldura 2</button>
+    <button data-frame="frames/frame3.png">Moldura 3</button>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Download -->
+  <button id="download">Baixar imagem</button>
+
+  <script>
+    const upload = document.getElementById("upload");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const downloadBtn = document.getElementById("download");
+    const frameButtons = document.querySelectorAll(".frames button");
+
+    let userImage = null;
+    let currentFrame = null;
+
+    // Upload da imagem
+    upload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        userImage = img;
+        draw();
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    // Seleção de moldura
+    frameButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const frameImg = new Image();
+        frameImg.onload = () => {
+          currentFrame = frameImg;
+          draw();
+        };
+        frameImg.src = btn.dataset.frame;
+      });
+    });
+
+    // Desenho final
+    function draw() {
+      if (!userImage) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
+
+      // 🟢 A MOLDURA é aplicada aqui
+      if (currentFrame) {
+        ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // Download
+    downloadBtn.addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.download = "imagem-com-moldura.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    });
+  </script>
+
+</body>
+</html>
