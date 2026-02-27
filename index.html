@@ -1,96 +1,109 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Foto com Moldura</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
 
-    canvas {
-      display: block;
-      margin-top: 15px;
-      max-width: 100%;
-      border: 1px solid #ccc;
-    }
-
-    .frames button {
-      margin-right: 8px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-  </style>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
 
-  <h2>Gerador de Foto com Moldura</h2>
+<body class="bg-gray-100 min-h-screen flex justify-center">
 
-  <!-- Upload da imagem -->
-  <input type="file" id="upload" accept="image/*">
+  <div class="w-full max-w-md p-4 space-y-4">
 
-  <!-- Botões de moldura -->
-  <div class="frames">
-    <!-- 🔴 TROQUE os caminhos abaixo pelas SUAS imagens PNG -->
-    <button data-frame="frames/frame1.png">Moldura 1</button>
-    <button data-frame="frames/frame2.png">Moldura 2</button>
-    <button data-frame="frames/frame3.png">Moldura 3</button>
+    <h1 class="text-xl font-semibold text-center">
+      Gerador de Foto com Moldura
+    </h1>
+
+    <!-- Upload -->
+    <input
+      type="file"
+      accept="image/*"
+      id="upload"
+      class="w-full text-sm
+             file:bg-blue-600 file:text-white
+             file:px-4 file:py-2 file:rounded
+             file:border-0"
+    />
+
+    <!-- Preview -->
+    <div class="bg-white rounded-lg shadow p-2 flex justify-center">
+      <canvas
+        id="canvas"
+        class="w-full h-auto rounded"
+        style="aspect-ratio: 1080 / 1350;"
+      ></canvas>
+    </div>
+
+    <!-- Download -->
+    <button
+      id="download"
+      class="w-full bg-green-600 text-white py-3 rounded-lg font-medium"
+    >
+      Baixar imagem
+    </button>
+
   </div>
-
-  <!-- Canvas -->
-  <canvas id="canvas"></canvas>
-
-  <!-- Download -->
-  <button id="download">Baixar imagem</button>
 
   <script>
     const upload = document.getElementById("upload");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const downloadBtn = document.getElementById("download");
-    const frameButtons = document.querySelectorAll(".frames button");
+
+    // 🔒 TAMANHO FIXO DA MOLDURA
+    const FRAME_WIDTH = 1080;
+    const FRAME_HEIGHT = 1350;
+
+    canvas.width = FRAME_WIDTH;
+    canvas.height = FRAME_HEIGHT;
 
     let userImage = null;
-    let currentFrame = null;
 
-    // Upload da imagem
+    // 🧩 MOLDURA FIXA (já carregada)
+    const frameImage = new Image();
+    frameImage.src = "frames/frame1.png"; // 🔴 ajuste o caminho se necessário
+    frameImage.onload = draw;
+
+    // Upload da imagem do usuário
     upload.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       const img = new Image();
       img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
         userImage = img;
         draw();
       };
       img.src = URL.createObjectURL(file);
     });
 
-    // Seleção de moldura
-    frameButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const frameImg = new Image();
-        frameImg.onload = () => {
-          currentFrame = frameImg;
-          draw();
-        };
-        frameImg.src = btn.dataset.frame;
-      });
-    });
-
-    // Desenho final
     function draw() {
-      if (!userImage) return;
+      // fundo
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
+      // 🖼️ imagem do usuário (sempre contida no frame)
+      if (userImage) {
+        const scale = Math.min(
+          FRAME_WIDTH / userImage.width,
+          FRAME_HEIGHT / userImage.height
+        );
 
-      // 🟢 A MOLDURA é aplicada aqui
-      if (currentFrame) {
-        ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
+        const width = userImage.width * scale;
+        const height = userImage.height * scale;
+
+        const x = (FRAME_WIDTH - width) / 2;
+        const y = (FRAME_HEIGHT - height) / 2;
+
+        ctx.drawImage(userImage, x, y, width, height);
+      }
+
+      // 🧩 moldura fixa SEM distorção
+      if (frameImage.complete) {
+        ctx.drawImage(frameImage, 0, 0, FRAME_WIDTH, FRAME_HEIGHT);
       }
     }
 
