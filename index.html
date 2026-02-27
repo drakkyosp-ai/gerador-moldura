@@ -17,15 +17,20 @@
       Gerador de Foto com Moldura
     </h1>
 
-    <!-- Upload -->
+    <!-- Upload customizado -->
+    <label
+      for="upload"
+      class="w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium
+             cursor-pointer active:scale-95 transition block"
+    >
+      Escolha sua foto
+    </label>
+
     <input
       type="file"
       accept="image/*"
       id="upload"
-      class="w-full text-sm
-             file:bg-blue-600 file:text-white
-             file:px-4 file:py-2 file:rounded
-             file:border-0"
+      class="hidden"
     />
 
     <!-- Preview -->
@@ -53,7 +58,6 @@
     const ctx = canvas.getContext("2d");
     const downloadBtn = document.getElementById("download");
 
-    // 🔒 TAMANHO FIXO DA MOLDURA
     const FRAME_WIDTH = 1080;
     const FRAME_HEIGHT = 1350;
 
@@ -62,12 +66,11 @@
 
     let userImage = null;
 
-    // 🧩 MOLDURA FIXA (já carregada)
+    // Moldura fixa
     const frameImage = new Image();
-    frameImage.src = "frames/frame1.png"; // 🔴 ajuste o caminho se necessário
+    frameImage.src = "frames/frame1.png"; // ajuste o caminho se necessário
     frameImage.onload = draw;
 
-    // Upload da imagem do usuário
     upload.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -81,11 +84,9 @@
     });
 
     function draw() {
-      // fundo
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
-      // 🖼️ imagem do usuário (sempre contida no frame)
       if (userImage) {
         const scale = Math.min(
           FRAME_WIDTH / userImage.width,
@@ -101,13 +102,11 @@
         ctx.drawImage(userImage, x, y, width, height);
       }
 
-      // 🧩 moldura fixa SEM distorção
       if (frameImage.complete) {
         ctx.drawImage(frameImage, 0, 0, FRAME_WIDTH, FRAME_HEIGHT);
       }
     }
 
-    // Download
     downloadBtn.addEventListener("click", () => {
       const a = document.createElement("a");
       a.download = "imagem-com-moldura.png";
